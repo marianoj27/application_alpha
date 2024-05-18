@@ -1,26 +1,30 @@
+import 'package:application_alpha/classes/cardScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
+import '../widgets/button_image.dart';
+import '../widgets/icon_window.dart';
 
 class imagenScreen extends StatefulWidget {
-  List<String> imagesList = ['market_icon.png', 'subway_icon.png'];
 
   @override
   State<imagenScreen> createState() => _imagenScreenState();
 }
-//Hola
+
 class _imagenScreenState extends State<imagenScreen> {
-  List<Widget> imageList = [
-    _buttonImage("Mercado", "market_icon.png"),
-    _buttonImage("Metro", "subway_icon.png"),
-    _buttonImage("Metro", "subway_icon.png"),
-    _buttonImage("Mercado", "market_icon.png"),
-  ];
+  List<Widget> imageList = [];
 
   @override
   Widget build(BuildContext context) {
+    imageList = [
+      ButtonImage(name: "Mercado", img: "market_icon.png"),
+      ButtonImage(name: "Metro", img: "subway_icon.png"),
+      ButtonImage(name: "Metro", img: "subway_icon.png"),
+      ButtonImage(name: "Ayuda", img: "help_icon.png"),
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "IMÁGENES",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -52,6 +56,17 @@ class _imagenScreenState extends State<imagenScreen> {
               alignment: WrapAlignment.spaceEvenly,
               children: imageList,
             ),
+            ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return IconWindow();
+                    },
+                  );
+                },
+                child: Text('Añadir Nuevo')
+            ),
           ],
         ),
       ),
@@ -59,10 +74,12 @@ class _imagenScreenState extends State<imagenScreen> {
   }
 }
 
-Widget _buttonImage(String name, String img) {
+/*
+Widget _buttonImage(BuildContext context,String name, String img) {
   return InkWell(
     onTap: () {
       // Acción a realizar al hacer clic en el botón de imagen
+      Navigator.push(context, MaterialPageRoute(builder: (_)=>cardScreen(selectedImage: img, name: name,)));
       print('Has hecho clic en la imagen: $img');
     },
     child: Container(
@@ -90,7 +107,7 @@ Widget _buttonImage(String name, String img) {
   );
 }
 
-/*
+
 class _imagenScreenState extends State<imagenScreen> {
   @override
   Widget build(BuildContext context) {

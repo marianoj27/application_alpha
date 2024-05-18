@@ -11,7 +11,6 @@ class speechScreen extends StatefulWidget {
 
 class _speechScreenState extends State<speechScreen> {
   FlutterTts _flutterTts = FlutterTts();
-
   List<Map> _voices = [];
   Map? _currentVoice;
 
@@ -35,7 +34,7 @@ class _speechScreenState extends State<speechScreen> {
         List<Map> voices = List<Map>.from(data);
         setState(() {
           _voices =
-              voices.where((voice) => voice["name"].contains("en")).toList();
+              voices.where((voice) => voice["name"].contains("es")).toList();
           _currentVoice = _voices.first;
           setVoice(_currentVoice!);
         });
@@ -46,12 +45,20 @@ class _speechScreenState extends State<speechScreen> {
   }
 
   void setVoice(Map voice) {
+    _flutterTts.setLanguage("es-ES");
     _flutterTts.setVoice({"name": voice["name"], "locale": voice["locale"]});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "SPEECH",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.tealAccent,
+      ),
       body: _buildUI(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
