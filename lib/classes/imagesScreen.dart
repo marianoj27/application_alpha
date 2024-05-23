@@ -1,6 +1,8 @@
 import 'package:application_alpha/classes/cardScreen.dart';
+import 'package:application_alpha/classes/newImageScreen.dart';
 import 'package:flutter/material.dart';
 
+import '../sharedPreferencesHelper.dart';
 import '../widgets/button_image.dart';
 import '../widgets/icon_window.dart';
 
@@ -14,14 +16,48 @@ class _imagenScreenState extends State<imagenScreen> {
   List<Widget> imageList = [];
 
   @override
-  Widget build(BuildContext context) {
-    imageList = [
-      ButtonImage(name: "Mercado", img: "market_icon.png"),
-      ButtonImage(name: "Metro", img: "subway_icon.png"),
-      ButtonImage(name: "Metro", img: "subway_icon.png"),
-      ButtonImage(name: "Ayuda", img: "help_icon.png"),
-    ];
+  void initState() {
+    super.initState();
+    initializeDefaultButtons();
+    loadSavedSVGAndNames();
+  }
 
+  void initializeDefaultButtons() {
+    imageList.addAll([
+      const ButtonImage(name: "Mercado", img: "market_icon.png"),
+      const ButtonImage(name: "Metro", img: "subway_icon.png"),
+      const ButtonImage(name: "Metro", img: "subway_icon.png"),
+      const ButtonImage(name: "Ayuda", img: "help_icon.png"),
+    ]);
+  }
+
+  Future<void> loadSavedSVGAndNames() async {
+    final svgAndNameList = await SharedPreferencesHelper.loadSVG('svg_and_name');
+    if (svgAndNameList != null) {
+      setState(() {
+        imageList.addAll(svgAndNameList.map((item) {
+          final name = item[0];
+          final svg = item[1];
+          return ButtonImage(name: name, img: svg);
+        }).toList());
+      });
+    }
+  }
+
+  Future<void> deleteSVGAndName(String name) async {
+    await SharedPreferencesHelper.removeSVGByName('svg_and_name', name);
+    setState(() {
+      imageList.removeWhere((widget) => (widget as ButtonImage).name == name);
+    });
+  }
+
+  Future<void> deletePhrasesFromImage(String name) async {
+    //phrasesList = await SharedPreferencesHelper.getList(name);
+    await SharedPreferencesHelper.clearList(name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -52,20 +88,80 @@ class _imagenScreenState extends State<imagenScreen> {
                 ),
               ],
             ),
-            Wrap(
-              alignment: WrapAlignment.spaceEvenly,
-              children: imageList,
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return IconWindow();
-                    },
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceEvenly,
+                        children: imageList,
+                      ),
+                    ),
                   );
                 },
-                child: Text('Añadir Nuevo')
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => newImageScreen()),
+                      );
+                    },
+                    child: const Text('Añadir Nuevo'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final String? nameToDelete = await showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          String name = "";
+                          return AlertDialog(
+                            title: const Text('Borrar SVG'),
+                            content: TextField(
+                              onChanged: (value) {
+                                name = value;
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Nombre del SVG a borrar',
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(name);
+                                },
+                                child: const Text('Borrar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (nameToDelete != null && nameToDelete.isNotEmpty) {
+                        await deleteSVGAndName(nameToDelete);
+                        await deletePhrasesFromImage(nameToDelete);
+                      }
+                    },
+                    child: const Text('Borrar SVG'),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

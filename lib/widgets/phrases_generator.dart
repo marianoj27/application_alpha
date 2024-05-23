@@ -20,13 +20,14 @@ class phrasesGenerator {
         '¿Cuánto cuesta este?.',
         'Me gustaría comprar esto.',
       ]);
-    } else {
+    } else if (name == 'Metro') {
       list.addAll([
         '¿Dónde está la estación de metro más cercana?',
         '¿Cuál es el camino al andén?',
       ]);
+    } else {
+      return [];
     }
-
     return list;
   }
 }

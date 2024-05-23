@@ -39,7 +39,7 @@ class _menuScreenState extends State<menuScreen> {
     if (imageName == "images_icon.png") {
       Navigator.push(context, MaterialPageRoute(builder: (context) => imagenScreen()));
     } else if (imageName == "quotes_icon.png") {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => imageRequest()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => imagenScreen()));
     }
   }
 

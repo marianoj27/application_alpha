@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:application_alpha/imageRequest.dart';
 
 class IconWindow extends StatelessWidget {
   @override
@@ -34,12 +35,5 @@ class IconWindow extends StatelessWidget {
 }
 
 class IconsData {
-  static final List<IconData> iconList = [
-    Icons.access_alarm,
-    Icons.accessibility,
-    Icons.accessible,
-    Icons.emoji_food_beverage,
-    Icons.sports_soccer,
-    Icons.home,
-  ];
+  static final List<IconData> iconList = [];
 }

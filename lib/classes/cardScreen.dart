@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:application_alpha/widgets/phrases_generator.dart';
 
@@ -200,11 +201,18 @@ class _cardScreenState extends State<cardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    "assets/${widget.selectedImage}",
-                    width: 150,
-                    height: 150,
-                  ),
+                  if (widget.selectedImage.startsWith('<svg'))
+                    SvgPicture.string(
+                      widget.selectedImage,
+                      width: 150,
+                      height: 150,
+                    )
+                  else
+                    Image.asset(
+                      "assets/${widget.selectedImage}",
+                      width: 150,
+                      height: 150,
+                    ),
                 ],
               ),
               SizedBox(height: 35.0),

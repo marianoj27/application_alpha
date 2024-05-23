@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:application_alpha/classes/cardScreen.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ButtonImage extends StatelessWidget {
   final String name;
@@ -19,7 +20,7 @@ class ButtonImage extends StatelessWidget {
           context,
           MaterialPageRoute(builder: (_) => cardScreen(selectedImage: img, name: name)),
         );
-        print('Has hecho clic en la imagen: $img');
+        //print('Has hecho clic en la imagen: $img');
       },
       child: Container(
         width: 180,
@@ -29,10 +30,16 @@ class ButtonImage extends StatelessWidget {
             padding: EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Image.asset(
-                  "assets/" + img,
-                  width: 145,
-                ),
+                if (img.startsWith('<svg'))
+                  SvgPicture.string(
+                    img,
+                    width: 145,
+                  )
+                else
+                  Image.asset(
+                    "assets/$img",
+                    width: 145,
+                  ),
                 SizedBox(height: 8),
                 Text(
                   name,
