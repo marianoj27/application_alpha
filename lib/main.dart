@@ -1,9 +1,7 @@
+import 'package:application_alpha/classes/imagesScreen.dart';
 import 'package:application_alpha/menuScreen.dart';
 import 'package:application_alpha/providers/model_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'sharedPreferencesHelper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,10 +14,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Aphasia App',
+        title: 'AphaTalk',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.tealAccent),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
           useMaterial3: true,
         ),
         home: menuScreen(),

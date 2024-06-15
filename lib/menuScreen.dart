@@ -39,7 +39,7 @@ class _menuScreenState extends State<menuScreen> {
     if (imageName == "images_icon.png") {
       Navigator.push(context, MaterialPageRoute(builder: (context) => imagenScreen()));
     } else if (imageName == "quotes_icon.png") {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => imagenScreen()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => speechScreen()));
     }
   }
 
@@ -47,16 +47,16 @@ class _menuScreenState extends State<menuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Esta línea elimina la flecha de volver atrás
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Alinea los elementos al inicio y al final
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Bienvenido! ${_username}',
+              'Bienvenido ${_username}',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             GestureDetector(
               onTap: () {
-                // Navegar a la siguiente pantalla al hacer clic en la imagen
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => profileScreen()),
@@ -64,18 +64,19 @@ class _menuScreenState extends State<menuScreen> {
               },
               child: Image.asset(
                 'assets/${_profileImg}',
-                width: 30,
-                height: 30,
+                width: 45,
+                height: 45,
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.tealAccent,
+        backgroundColor: Colors.greenAccent,
+        elevation: 4,
       ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/bg.png"), // Ruta y nombre de tu imagen
+            image: AssetImage("assets/bg.png"),
             fit: BoxFit.cover, // Ajusta la imagen para cubrir el fondo
           ),
         ),
@@ -91,29 +92,47 @@ class _menuScreenState extends State<menuScreen> {
                   ),
                   itemBuilder: (context, index) {
                     return Container(
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(30),
                       decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(40)
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(70),
                       ),
                       child: GestureDetector(
                         onTap: () {
                           print("object");
                           navigateToScreen(Menu[index].photo);
                         },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              "assets/" + Menu[index].photo,
-                              width: 300,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              navigateToScreen(Menu[index].photo);
+                            },
+                            borderRadius: BorderRadius.circular(40),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AnimatedContainer(
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                  width: 250,
+                                  child: Image.asset(
+                                    "assets/" + Menu[index].photo,
+                                    width: 200,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  Menu[index].name,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 30,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              Menu[index].name,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
-                            )
-                          ],
+                          ),
                         ),
                       ),
                     );

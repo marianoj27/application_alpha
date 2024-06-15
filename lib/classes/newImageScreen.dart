@@ -33,14 +33,15 @@ class _newImageScreenState extends State<newImageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva Sección'),
-        backgroundColor: Colors.tealAccent,
+        title: const Text('Crear nuevo botón',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),),
+        backgroundColor: Colors.greenAccent,
       ),
       body: Column(
         children: [
           // Campo de texto
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(9.0),
             child: Row(
               children: [
                 Expanded(
@@ -50,19 +51,34 @@ class _newImageScreenState extends State<newImageScreen> {
                         userInput = value;
                       });
                     },
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Escribe una palabra',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0), // Radio de borde redondeado
+                      ),
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send_rounded,
-                  size: 50,),
-                  onPressed: () {
+                SizedBox(width: 10,),
+                InkResponse(
+                  onTap: () {
                     _loadSVGs(userInput);
                     print('Texto enviado: $userInput');
                   },
+                  borderRadius: BorderRadius.circular(30), // Radio de borde del área sensible
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.green, // Color de fondo del botón
+                    ),
+                    child: const Icon(
+                      Icons.send,
+                      size: 30,
+                      color: Colors.white, // Color del ícono
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -86,7 +102,7 @@ class _newImageScreenState extends State<newImageScreen> {
                       builder: (BuildContext context) {
                         String? nameInput;
                         return AlertDialog(
-                          title: const Text('Guardar SVG'),
+                          title: const Text('Guardar'),
                           content: TextField(
                             onChanged: (value) {
                               nameInput = value;
@@ -98,15 +114,27 @@ class _newImageScreenState extends State<newImageScreen> {
                           actions: [
                             TextButton(
                               onPressed: () {
-                                Navigator.of(context).pop(nameInput ?? userInput);
+                                Navigator.of(context).pop();
                               },
-                              child: const Text('Guardar'),
+                              child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(color: Colors.white, fontSize: 17),
+                              ),
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.pink, // Color de fondo del botón Guardar
+                              ),
                             ),
                             TextButton(
                               onPressed: () {
-                                Navigator.of(context).pop();
+                                Navigator.of(context).pop(nameInput ?? userInput);
                               },
-                              child: const Text('Cancelar'),
+                              child: const Text(
+                                  'Guardar',
+                                  style: TextStyle(color: Colors.white, fontSize: 17),
+                              ),
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.cyan, // Color de fondo para Borrar Módulo
+                              ),
                             ),
                           ],
                         );
@@ -115,7 +143,7 @@ class _newImageScreenState extends State<newImageScreen> {
 
                     if (result != null) {
                       await SharedPreferencesHelper.saveSVG('svg_and_name', result, svgList[index]);
-                      print('SVG guardado con el nombre: $result');
+                      //print('SVG guardado con el nombre: $result');
 
                       // Navegar a la pantalla ImageScreen después de guardar el SVG
                       Navigator.push(

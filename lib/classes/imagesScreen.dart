@@ -1,6 +1,8 @@
 import 'package:application_alpha/classes/cardScreen.dart';
 import 'package:application_alpha/classes/newImageScreen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../sharedPreferencesHelper.dart';
 import '../widgets/button_image.dart';
@@ -14,6 +16,7 @@ class imagenScreen extends StatefulWidget {
 
 class _imagenScreenState extends State<imagenScreen> {
   List<Widget> imageList = [];
+  List<Widget> addedImageList = [];
 
   @override
   void initState() {
@@ -24,9 +27,9 @@ class _imagenScreenState extends State<imagenScreen> {
 
   void initializeDefaultButtons() {
     imageList.addAll([
-      const ButtonImage(name: "Mercado", img: "market_icon.png"),
+      const ButtonImage(name: "Mercado", img: "market_icon.png",),
       const ButtonImage(name: "Metro", img: "subway_icon.png"),
-      const ButtonImage(name: "Metro", img: "subway_icon.png"),
+      const ButtonImage(name: "Bar/Cafetería", img: "cafeteria_icon.png"),
       const ButtonImage(name: "Ayuda", img: "help_icon.png"),
     ]);
   }
@@ -35,7 +38,7 @@ class _imagenScreenState extends State<imagenScreen> {
     final svgAndNameList = await SharedPreferencesHelper.loadSVG('svg_and_name');
     if (svgAndNameList != null) {
       setState(() {
-        imageList.addAll(svgAndNameList.map((item) {
+        addedImageList.addAll(svgAndNameList.map((item) {
           final name = item[0];
           final svg = item[1];
           return ButtonImage(name: name, img: svg);
@@ -47,7 +50,7 @@ class _imagenScreenState extends State<imagenScreen> {
   Future<void> deleteSVGAndName(String name) async {
     await SharedPreferencesHelper.removeSVGByName('svg_and_name', name);
     setState(() {
-      imageList.removeWhere((widget) => (widget as ButtonImage).name == name);
+      addedImageList.removeWhere((widget) => (widget as ButtonImage).name == name);
     });
   }
 
@@ -61,10 +64,11 @@ class _imagenScreenState extends State<imagenScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "IMÁGENES",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "¡Imágenes!",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         ),
-        backgroundColor: Colors.tealAccent,
+        backgroundColor: Colors.greenAccent,
+        elevation: 4,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -98,7 +102,10 @@ class _imagenScreenState extends State<imagenScreen> {
                       ),
                       child: Wrap(
                         alignment: WrapAlignment.spaceEvenly,
-                        children: imageList,
+                        children: [
+                          ...imageList,
+                          ...addedImageList,
+                        ],
                       ),
                     ),
                   );
@@ -110,55 +117,122 @@ class _imagenScreenState extends State<imagenScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
+                  TextButton.icon(
+                    onPressed: () async {
+                      List<String> selectedNames = [];
+                      bool isCanceled = false;
+
+                      await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return StatefulBuilder(
+                            builder: (BuildContext context, StateSetter setState) {
+                              return AlertDialog(
+                                title: const Text('Eliminar objetos de la lista:'),
+                                content: SingleChildScrollView(
+                                  child: ListBody(
+                                    children: [
+                                      ...addedImageList.map((widget) {
+                                        final ButtonImage buttonImage = widget as ButtonImage;
+                                        bool isSelected = selectedNames.contains(buttonImage.name);
+
+                                        return ListTile(
+                                          leading: buttonImage.img.startsWith('<svg')
+                                              ? SvgPicture.string(
+                                            buttonImage.img,
+                                            width: 40,
+                                            height: 40,
+                                          )
+                                              : Image.asset(
+                                            "assets/${buttonImage.img}",
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                          title: Text(
+                                            buttonImage.name,
+                                            style: TextStyle(color: isSelected ? Colors.red : Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                                          ),
+                                          trailing: IconButton(
+                                            icon: Icon(
+                                              Icons.delete,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                if (isSelected) {
+                                                  selectedNames.remove(buttonImage.name);
+                                                } else {
+                                                  selectedNames.add(buttonImage.name);
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ],
+                                  ),
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      isCanceled = true;
+                                      Navigator.of(context).pop([]);
+                                    },
+                                    child: const Text('Cancelar'),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: isCanceled ? Colors.black : null,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.of(context).pop(selectedNames);
+                                      for (String nameToDelete in selectedNames) {
+                                        if (nameToDelete.isNotEmpty && !isCanceled) {
+                                          await deleteSVGAndName(nameToDelete);
+                                          await deletePhrasesFromImage(nameToDelete);
+                                        }
+                                      }
+                                    },
+                                    child: const Text(
+                                      'Borrar',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.delete, color: Colors.white), // Icono para Borrar Módulo
+                    label: const Text(
+                      'Borrar',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.pink, // Color de fondo para Borrar Módulo
+                    ),
+                  ),
+                  TextButton.icon(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => newImageScreen()),
                       );
                     },
-                    child: const Text('Añadir Nuevo'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final String? nameToDelete = await showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          String name = "";
-                          return AlertDialog(
-                            title: const Text('Borrar SVG'),
-                            content: TextField(
-                              onChanged: (value) {
-                                name = value;
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Nombre del SVG a borrar',
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Cancelar'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop(name);
-                                },
-                                child: const Text('Borrar'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (nameToDelete != null && nameToDelete.isNotEmpty) {
-                        await deleteSVGAndName(nameToDelete);
-                        await deletePhrasesFromImage(nameToDelete);
-                      }
-                    },
-                    child: const Text('Borrar SVG'),
+                    icon: Icon(Icons.add, color: Colors.white, size: 30,), // Icono para Añadir Nuevo
+                    label: const Text(
+                      'Añadir Nuevo',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.cyan, // Color de fondo para Añadir Nuevo
+                      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0,), // Ajustar el espaciado aquí
+                    ),
                   ),
                 ],
               ),

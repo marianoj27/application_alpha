@@ -18,6 +18,7 @@ class _profileScreenState extends State<profileScreen> {
   void initState() {
     super.initState();
     _loadUsername();
+    _loadImage();
   }
 
   void _loadUsername() async {
@@ -65,75 +66,117 @@ class _profileScreenState extends State<profileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Perfil'),
+        title: const Text(
+          'Editar Perfil',
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.tealAccent,
       ),
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    //Click en la primera imagen
-                    _storedImage = "profile_icon.png";
-                    _saveImage(_storedImage);
-                    print('Imagen guardada: $_storedImage');
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Image.asset("assets/profile_icon.png", width: 150),
+      body: Center(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Selecciona una imagen:',
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    //Click en la segunda imagen
-                    _storedImage = "profile2_icon.png";
-                    _saveImage(_storedImage);
-                    print('Imagen guardada: $_storedImage');
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Image.asset("assets/profile2_icon.png", width: 150),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _storedImage = "profile_icon.png";
+                          });
+                          //_saveImage(_storedImage);
+                          print('Imagen guardada: $_storedImage');
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            width: _storedImage == "profile_icon.png" ? 200 : 100,
+                            height: 200, // Altura fija
+                            child: Image.asset("assets/profile_icon.png"),
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _storedImage = "profile2_icon.png";
+                          });
+                          //_saveImage(_storedImage);
+                          print('Imagen guardada: $_storedImage');
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            width: _storedImage == "profile2_icon.png" ? 200 : 100,
+                            height: 200, // Altura fija
+                            child: Image.asset("assets/profile2_icon.png"),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            TextField(
-              controller: _usernameController,
-              onChanged: (value) {},
-              decoration: InputDecoration(
-                labelText: 'Nombre de usuario',
+                  SizedBox(height: 16.0), // Espacio entre las imágenes y el TextField
+                  TextField(
+                    controller: _usernameController,
+                    onChanged: (value) {},
+                    decoration: InputDecoration(
+                      labelText: 'Nombre de usuario',
+                    ),
+                  ),
+                  SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          String newUsername = _usernameController.text;
+                          _saveUsername(newUsername);
+                          _saveImage(_storedImage);
+                          print('Nombre guardado: $newUsername');
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => menuScreen()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.cyan,
+                        ),
+                        child: const Text(
+                          'Guardar',
+                          style: TextStyle(color: Colors.white, fontSize: 17),
+                        ),
+                      ),
+                      SizedBox(width: 8.0), // Espacio entre botones
+                      ElevatedButton(
+                        onPressed: () {
+                          SharedPreferencesHelper.clearUsername();
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => menuScreen()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.pinkAccent,
+                        ),
+                        child: Text(
+                            'Borrar',
+                            style: TextStyle(color: Colors.white, fontSize: 17),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    String newUsername = _usernameController.text;
-                    _saveUsername(newUsername);
-                    print('Nombre guardado: $newUsername');
-                    Navigator.push(context, MaterialPageRoute(builder: (_)=>menuScreen()));
-                  },
-                  child: Text('Guardar nombre'),
-                ),
-                SizedBox(width: 8.0), // Espacio entre botones
-                ElevatedButton(
-                  onPressed: () {
-                    SharedPreferencesHelper.clearUsername();
-                    Navigator.push(context, MaterialPageRoute(builder: (_)=>menuScreen()));
-                  },
-                  child: Text('Borrar nombre'),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
