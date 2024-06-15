@@ -19,7 +19,7 @@ class _cardScreenState extends State<cardScreen> {
   FlutterTts flutterTts = FlutterTts();
   List<String> phrases = [];
   List<String> savedPhrases = [];
-  double speechRate = 1.0; // Define el estado de la velocidad de lectura
+  double speechRate = 0.4; // Define el estado de la velocidad de lectura
 
   @override
   void initState() {
@@ -193,14 +193,14 @@ class _cardScreenState extends State<cardScreen> {
 
   void _increaseSpeechRate() {
     setState(() {
-      speechRate = (speechRate + 0.5).clamp(0.5, 2.0); // Aumenta la velocidad de lectura
+      speechRate = (speechRate + 0.2).clamp(0, 1.0); // Aumenta la velocidad de lectura
       flutterTts.setSpeechRate(speechRate);
     });
   }
 
   void _decreaseSpeechRate() {
     setState(() {
-      speechRate = (speechRate - 0.5).clamp(0.5, 2.0); // Disminuye la velocidad de lectura
+      speechRate = (speechRate - 0.2).clamp(0, 1.0); // Disminuye la velocidad de lectura
       flutterTts.setSpeechRate(speechRate);
     });
   }
