@@ -13,12 +13,16 @@ class phrasesGenerator {
         'Tengo Afasia, necesito ayuda.',
         'No sé cómo llegar a mi casa.',
         'Necesito hacer una llamada.',
+        'Necesito ayuda para escribir.',
+        'Necesito ayuda para leer.',
       ]);
     } else if (name == 'Mercado') {
       list.addAll([
-        '¿Puedo ver esto?, Por favor.',
-        '¿Cuánto cuesta esto?.',
+        '¿Cuánto cuesta este?.',
         'Me gustaría comprar esto.',
+        'Quiero un kilo',
+        'Quiero medio kilo',
+        'Quiero un cuarto de kilo',
       ]);
     } else if (name == 'Metro') {
       list.addAll([

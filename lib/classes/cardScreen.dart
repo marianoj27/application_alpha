@@ -193,14 +193,21 @@ class _cardScreenState extends State<cardScreen> {
 
   void _increaseSpeechRate() {
     setState(() {
-      speechRate = (speechRate + 0.2).clamp(0, 1.0); // Aumenta la velocidad de lectura
+      speechRate = (speechRate + 0.2).clamp(0.2, 0.6); // Aumenta la velocidad de lectura
       flutterTts.setSpeechRate(speechRate);
     });
   }
 
   void _decreaseSpeechRate() {
     setState(() {
-      speechRate = (speechRate - 0.2).clamp(0, 1.0); // Disminuye la velocidad de lectura
+      speechRate = (speechRate - 0.2).clamp(0.2, 0.6); // Disminuye la velocidad de lectura
+      flutterTts.setSpeechRate(speechRate);
+    });
+  }
+
+  void _setSpeechRate(double rate) {
+    setState(() {
+      speechRate = rate;
       flutterTts.setSpeechRate(speechRate);
     });
   }
@@ -210,6 +217,12 @@ class _cardScreenState extends State<cardScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamed(context, '/image');
+          },
+        ),
         title: Text(
           widget.name,
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
@@ -217,15 +230,15 @@ class _cardScreenState extends State<cardScreen> {
         backgroundColor: Colors.greenAccent,
         actions: [
           PopupMenuButton(
-            icon: Icon(Icons.more_vert,),
+            icon: Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
                   onTap: _clearAllPhrases,
                   child: const Row(
                     children: [
-                      Icon(Icons.delete, color: Colors.black), // Icono a la izquierda del texto
-                      SizedBox(width: 10), // Espacio entre el icono y el texto
+                      Icon(Icons.delete, color: Colors.black),
+                      SizedBox(width: 10),
                       Text(
                         'Borrar todas las frases creadas',
                         style: TextStyle(color: Colors.black),
@@ -249,26 +262,22 @@ class _cardScreenState extends State<cardScreen> {
               ElevatedButton(
                 onPressed: () => _showAddPhraseDialog(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 18.0), // Padding interno del botón
+                  backgroundColor: Colors.cyan,
+                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 18.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0), // Bordes redondeados
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add,
-                      weight: 10,
-                      size: 30,
-                      color: Colors.white,
-                    ),
+                    Icon(Icons.add, size: 30, color: Colors.white),
                     SizedBox(width: 2.0),
                     Text(
                       "Añadir frase",
                       style: TextStyle(
-                          fontSize: 20.0,
-                          color: Colors.white,
+                        fontSize: 20.0,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -292,26 +301,26 @@ class _cardScreenState extends State<cardScreen> {
                     ),
                 ],
               ),
-              // Botones para ajustar la velocidad de lectura
               SizedBox(height: 25.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    onPressed: _decreaseSpeechRate,
-                    icon: Icon(Icons.remove_circle_outlined, size: 35,),
-                    tooltip: 'Disminuir velocidad',
-                    color: Colors.pinkAccent,
+                  const Text(
+                    'Velocidad del sonido:',
+                    style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                    'Velocidad del sónido',
-                    style: TextStyle(color: Colors.black, fontSize: 20),
-                  ),
-                  IconButton(
-                    onPressed: _increaseSpeechRate,
-                    icon: Icon(Icons.add_circle_outlined, size: 35,),
-                    tooltip: 'Aumentar velocidad',
-                    color: Colors.blue,
+                  //SizedBox(width: 5),
+                  Expanded(
+                    child: Slider(
+                      value: speechRate,
+                      min: 0.2,
+                      max: 0.6,
+                      divisions: 2, // Divisiones en el slider
+                      label: speechRate.toStringAsFixed(1),
+                      onChanged: (double value) {
+                        _setSpeechRate(value);
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -325,16 +334,16 @@ class _cardScreenState extends State<cardScreen> {
                         speak(phrase);
                       },
                       child: Text(
-                          phrase,
-                          style: TextStyle(fontSize: 17),
+                        phrase,
+                        style: TextStyle(fontSize: 17, color: Colors.black),
                       ),
                     );
                   }).toList(),
                   ...savedPhrases.map((phrase) {
                     return Container(
-                      width: MediaQuery.of(context).size.width * 0.9, // Ajustar el ancho según sea necesario
+                      width: MediaQuery.of(context).size.width * 0.9,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center, // Centra los elementos horizontalmente
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible(
                             child: ElevatedButton(
@@ -343,7 +352,7 @@ class _cardScreenState extends State<cardScreen> {
                               },
                               child: Text(
                                 phrase,
-                                style: TextStyle(fontSize: 17),
+                                style: TextStyle(fontSize: 17, color: Colors.black),
                               ),
                             ),
                           ),

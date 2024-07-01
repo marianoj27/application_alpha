@@ -47,7 +47,16 @@ class SharedPreferencesHelper {
     await prefs.setStringList(key, svgAndNameList.map((item) => item.join('|')).toList());
   }
 
-  //Profile helper
+  static Future<void> removeSVGByImg(String key, String img) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<List<String>> svgAndNameList = prefs.getStringList(key)?.map((item) => item.split('|')).toList() ?? [];
+
+    svgAndNameList.removeWhere((item) => item[1] == img); // Comparar con el índice 1 (img)
+
+    await prefs.setStringList(key, svgAndNameList.map((item) => item.join('|')).toList());
+  }
+
+  //Profile
   static Future<String> getUsername() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('username') ?? '';
@@ -58,7 +67,6 @@ class SharedPreferencesHelper {
     await prefs.remove('username');
   }
 
-  //Si se quiere editar el nombre en otra parte de la app que no sea el profile
   static Future<void> editNewUsername(String newUsername) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('username', newUsername);

@@ -16,6 +16,199 @@ class _newImageScreenState extends State<newImageScreen> {
   String userInput = '';
   String? svgData; // Variable para almacenar el SVG recibido
   List<String> svgList = [];
+  bool isLoading = false; // Estado de carga
+
+  Future<void> _loadSVGs(String word) async {
+    try {
+      setState(() {
+        isLoading = true; // Indicar que se está cargando
+        svgList.clear(); // Limpiar la lista antes de agregar nuevos SVGs
+      });
+
+      final svgs = await fetchSVGs(word);
+      setState(() {
+        svgList.addAll(svgs); // Agregar los SVGs obtenidos
+        isLoading = false; // Indicar que la carga ha finalizado
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false; // Asegurarse de que isLoading se restablezca en caso de error
+      });
+      print('Error cargando SVGs: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamed(context, '/image');
+          },
+        ),
+        title: const Text(
+          'Crear nuevo botón',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        ),
+        backgroundColor: Colors.greenAccent,
+      ),
+      body: Column(
+        children: [
+          // Campo de texto y botón de enviar
+          Padding(
+            padding: const EdgeInsets.all(9.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        userInput = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Escribe una palabra',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                InkResponse(
+                  onTap: () {
+                    _loadSVGs(userInput); // Cargar SVGs cuando se toque el botón
+                    print('Texto enviado: $userInput');
+                  },
+                  borderRadius: BorderRadius.circular(30),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.green,
+                    ),
+                    child: const Icon(
+                      Icons.send,
+                      size: 30,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Mostrar el SVG recibido
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator()) // Mostrar indicador de carga
+                : GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+              ),
+              itemCount: svgList.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () async {
+                    // Selección del ícono aquí
+                    print('Ícono seleccionado: $index');
+
+                    // Muestra un diálogo para que el usuario ingrese el nombre
+                    final result = await showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        String? nameInput;
+                        return AlertDialog(
+                          title: const Text('Guardar'),
+                          content: TextField(
+                            onChanged: (value) {
+                              nameInput = value;
+                            },
+                            decoration: const InputDecoration(
+                              hintText: 'Ingresa el nombre',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.pink,
+                              ),
+                              child: const Text(
+                                'Cancelar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                if (nameInput?.isNotEmpty == true) {
+                                  Navigator.of(context).pop(nameInput!);
+                                } else {
+                                  Navigator.of(context).pop(userInput);
+                                }
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.cyan,
+                              ),
+                              child: const Text(
+                                'Guardar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (result != null) {
+                      await SharedPreferencesHelper.saveSVG('svg_and_name', result, svgList[index]);
+                      // Navegar a la pantalla ImageScreen después de guardar el SVG
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => imagenScreen()),
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.black54,
+                          width: 2.5,
+                        ),
+                      ),
+                      child: svgList[index].isEmpty
+                          ? Center(child: CircularProgressIndicator()) // Mostrar círculo de carga si el SVG no se ha cargado
+                          : SvgPicture.string(
+                        svgList[index],
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+/*String userInput = '';
+  String? svgData; // Variable para almacenar el SVG recibido
+  List<String> svgList = [];
 
   Future<void> _loadSVGs(String word) async {
     try {
@@ -177,5 +370,4 @@ class _newImageScreenState extends State<newImageScreen> {
         ],
       ),
     );
-  }
-}
+  }*/

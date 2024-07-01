@@ -1,4 +1,3 @@
-import 'package:application_alpha/classes/chatScreen.dart';
 import 'package:application_alpha/classes/imagesScreen.dart';
 import 'package:application_alpha/classes/profileScreen.dart';
 import 'package:application_alpha/classes/speechScreen.dart';
@@ -16,8 +15,10 @@ class menuScreen extends StatefulWidget {
 class _menuScreenState extends State<menuScreen> {
   String _username = '';
   String _profileImg = '';
+
   @override
   void initState() {
+    super.initState();
     _loadUsername();
     _loadProfileImg();
   }
@@ -28,6 +29,7 @@ class _menuScreenState extends State<menuScreen> {
       _username = username;
     });
   }
+
   void _loadProfileImg() async {
     String profileImg = await SharedPreferencesHelper.getProfileImage();
     setState(() {
@@ -35,35 +37,28 @@ class _menuScreenState extends State<menuScreen> {
     });
   }
 
-  void navigateToScreen(String imageName) {
-    if (imageName == "images_icon.png") {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => imagenScreen()));
-    } else if (imageName == "quotes_icon.png") {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => speechScreen()));
-    }
+  void navigateToScreen(String routeName) {
+    Navigator.pushNamed(context, routeName);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Esta línea elimina la flecha de volver atrás
+        automaticallyImplyLeading: false,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Bienvenido ${_username}',
+              'Bienvenido $_username',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => profileScreen()),
-                );
+                navigateToScreen('/profile');
               },
               child: Image.asset(
-                'assets/${_profileImg}',
+                'assets/$_profileImg',
                 width: 45,
                 height: 45,
               ),
@@ -77,67 +72,71 @@ class _menuScreenState extends State<menuScreen> {
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/bg.png"),
-            fit: BoxFit.cover, // Ajusta la imagen para cubrir el fondo
+            fit: BoxFit.cover,
           ),
         ),
         child: Column(
           children: [
             Expanded(
-              child: Container(
-                color: Colors.transparent, // Establece el color del contenido como transparente para que la imagen de fondo sea visible
-                child: GridView.builder(
-                  itemCount: Menu.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 1,
-                  ),
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: EdgeInsets.all(30),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(70),
-                      ),
-                      child: GestureDetector(
-                        onTap: () {
-                          print("object");
-                          navigateToScreen(Menu[index].photo);
-                        },
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              navigateToScreen(Menu[index].photo);
-                            },
-                            borderRadius: BorderRadius.circular(40),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                AnimatedContainer(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                  width: 250,
-                                  child: Image.asset(
-                                    "assets/" + Menu[index].photo,
-                                    width: 200,
-                                  ),
+              child: GridView.builder(
+                itemCount: Menu.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 1,
+                ),
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.all(30),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(70),
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (Menu[index].photo == "images_icon.png") {
+                          navigateToScreen('/image');
+                        } else if (Menu[index].photo == "quotes_icon.png") {
+                          navigateToScreen('/speech');
+                        }
+                      },
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            if (Menu[index].photo == "images_icon.png") {
+                              navigateToScreen('/image');
+                            } else if (Menu[index].photo == "quotes_icon.png") {
+                              navigateToScreen('/speech');
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(40),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                                width: 250,
+                                child: Image.asset(
+                                  "assets/" + Menu[index].photo,
+                                  width: 200,
                                 ),
-                                SizedBox(height: 10),
-                                Text(
-                                  Menu[index].name,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 30,
-                                  ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                Menu[index].name,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 30,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

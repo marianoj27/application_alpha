@@ -1,7 +1,9 @@
 import 'package:application_alpha/classes/imagesScreen.dart';
 import 'package:application_alpha/menuScreen.dart';
-import 'package:application_alpha/providers/model_provider.dart';
 import 'package:flutter/material.dart';
+
+import 'classes/profileScreen.dart';
+import 'classes/speechScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +22,13 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
           useMaterial3: true,
         ),
-        home: menuScreen(),
+        initialRoute: '/',
+        routes: {
+        '/': (context) => menuScreen(),
+        '/image': (context) => imagenScreen(),
+        '/speech': (context) => speechScreen(),
+        '/profile': (context) => profileScreen(),
+      },
     );
   }
 }

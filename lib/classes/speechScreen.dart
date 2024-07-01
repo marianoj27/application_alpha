@@ -46,13 +46,21 @@ class _speechScreenState extends State<speechScreen> {
   }
 
   void _onSuggestionTapped(String word) {
-    setState(() {
-      _selectedWords.add(word);
-      //_suggestions.clear();
-      _textController.clear();
-      _updateDisplayedText();
-      _updateSuggestions();
-    });
+    if (_selectedWords.length < 5) {
+      setState(() {
+        _selectedWords.add(word);
+        _textController.clear();
+        _updateDisplayedText();
+        _updateSuggestions();
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No puedes agregar más de 5 palabras'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _updateDisplayedText() {
@@ -63,7 +71,6 @@ class _speechScreenState extends State<speechScreen> {
 
   void _updateSuggestions() {
     setState(() {
-      print(_selectedWords);
       if (_selectedWords.isNotEmpty) {
         final lastWord = _selectedWords.last;
         _suggestions = wordSuggestions[lastWord] ?? [];
@@ -82,7 +89,6 @@ class _speechScreenState extends State<speechScreen> {
   void _clearText() {
     setState(() {
       _selectedWords.clear();
-      //_suggestions.clear();
       _textController.clear();
       _displayedText = '';
     });
@@ -92,9 +98,10 @@ class _speechScreenState extends State<speechScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            '¡Hacer Frases!',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25)),
+        title: const Text(
+          '¡Hacer Frases!',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        ),
         backgroundColor: Colors.greenAccent,
       ),
       body: Padding(
@@ -105,7 +112,7 @@ class _speechScreenState extends State<speechScreen> {
             TextField(
               controller: _textController,
               onChanged: _onTextChanged,
-              style: TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18),
               decoration: InputDecoration(
                 hintText: 'Escribe una palabra',
                 border: OutlineInputBorder(
@@ -125,8 +132,14 @@ class _speechScreenState extends State<speechScreen> {
                       children: _suggestions
                           .map((word) => ElevatedButton(
                         onPressed: () => _onSuggestionTapped(word),
-                        child: Text(word,
-                        style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
+                        child: Text(
+                          word,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ))
                           .toList(),
                     ),
@@ -139,11 +152,19 @@ class _speechScreenState extends State<speechScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    _displayedText,
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
+                  Center(
+                    child: Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Text(
+                          _displayedText,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16.0),
@@ -152,18 +173,18 @@ class _speechScreenState extends State<speechScreen> {
             ),
             Container(
               decoration: BoxDecoration(
-                color: Colors.grey[200], // Color de fondo del cuadro
+                color: Colors.grey[200],
                 border: Border.all(
-                  width: 2.0, // Ancho del borde
+                  width: 2.0,
                   color: Colors.transparent,
                 ),
                 borderRadius: BorderRadius.circular(10.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2), // Color de la sombra con opacidad
-                    spreadRadius: 2, // Extensión de la sombra
-                    blurRadius: 5, // Desenfoque de la sombra
-                    offset: Offset(3, 3), // Desplazamiento de la sombra
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(3, 3),
                   ),
                 ],
               ),
@@ -171,11 +192,11 @@ class _speechScreenState extends State<speechScreen> {
                 onPressed: _clearText,
                 icon: const Icon(
                   Icons.delete,
-                  size: 25.0, // Cambia el tamaño del icono
+                  size: 25.0,
                 ),
-                splashColor: Colors.blue, // Color del splash (onda) cuando se presiona el botón
-                highlightColor: Colors.black12, // Color al mantener presionado el botón
-                iconSize: 60.0, // Tamaño del área interactiva del botón
+                splashColor: Colors.blue,
+                highlightColor: Colors.black12,
+                iconSize: 60.0,
               ),
             ),
           ],

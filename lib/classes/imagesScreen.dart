@@ -47,10 +47,10 @@ class _imagenScreenState extends State<imagenScreen> {
     }
   }
 
-  Future<void> deleteSVGAndName(String name) async {
-    await SharedPreferencesHelper.removeSVGByName('svg_and_name', name);
+  Future<void> deleteSVGAndName(String img) async {
+    await SharedPreferencesHelper.removeSVGByImg('svg_and_name', img);
     setState(() {
-      addedImageList.removeWhere((widget) => (widget as ButtonImage).name == name);
+      addedImageList.removeWhere((widget) => (widget as ButtonImage).img == img);
     });
   }
 
@@ -63,6 +63,12 @@ class _imagenScreenState extends State<imagenScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamed(context, '/');
+          },
+        ),
         title: const Text(
           "¡Imágenes!",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
@@ -119,7 +125,7 @@ class _imagenScreenState extends State<imagenScreen> {
                 children: [
                   TextButton.icon(
                     onPressed: () async {
-                      List<String> selectedNames = [];
+                      List<String> selectedImages = [];
                       bool isCanceled = false;
 
                       await showDialog(
@@ -134,7 +140,7 @@ class _imagenScreenState extends State<imagenScreen> {
                                     children: [
                                       ...addedImageList.map((widget) {
                                         final ButtonImage buttonImage = widget as ButtonImage;
-                                        bool isSelected = selectedNames.contains(buttonImage.name);
+                                        bool isSelected = selectedImages.contains(buttonImage.img);
 
                                         return ListTile(
                                           leading: buttonImage.img.startsWith('<svg')
@@ -150,7 +156,11 @@ class _imagenScreenState extends State<imagenScreen> {
                                           ),
                                           title: Text(
                                             buttonImage.name,
-                                            style: TextStyle(color: isSelected ? Colors.red : Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                              color: isSelected ? Colors.red : Colors.black,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                           trailing: IconButton(
                                             icon: Icon(
@@ -160,9 +170,9 @@ class _imagenScreenState extends State<imagenScreen> {
                                             onPressed: () {
                                               setState(() {
                                                 if (isSelected) {
-                                                  selectedNames.remove(buttonImage.name);
+                                                  selectedImages.remove(buttonImage.img);
                                                 } else {
-                                                  selectedNames.add(buttonImage.name);
+                                                  selectedImages.add(buttonImage.img);
                                                 }
                                               });
                                             },
@@ -185,11 +195,11 @@ class _imagenScreenState extends State<imagenScreen> {
                                   ),
                                   TextButton(
                                     onPressed: () async {
-                                      Navigator.of(context).pop(selectedNames);
-                                      for (String nameToDelete in selectedNames) {
-                                        if (nameToDelete.isNotEmpty && !isCanceled) {
-                                          await deleteSVGAndName(nameToDelete);
-                                          await deletePhrasesFromImage(nameToDelete);
+                                      Navigator.of(context).pop(selectedImages);
+                                      for (String imgToDelete in selectedImages) {
+                                        if (imgToDelete.isNotEmpty && !isCanceled) {
+                                          await deleteSVGAndName(imgToDelete);
+                                          await deletePhrasesFromImage(imgToDelete);
                                         }
                                       }
                                     },
