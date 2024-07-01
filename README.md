@@ -1,4 +1,4 @@
-# application_alpha
+# Talk Aphasia
 
 A new Flutter project.
 
@@ -22,3 +22,7 @@ samples, guidance on mobile development, and a full API reference.
 <a href="https://www.flaticon.com/free-icons/user" title="user icons">User icons created by Freepik - Flaticon</a>
 <a href="https://www.flaticon.es/iconos-gratis/comestibles" title="comestibles iconos">Comestibles iconos creados por Freepik - Flaticon</a>
 <a href="https://www.flaticon.es/iconos-gratis/entrenar" title="entrenar iconos">Entrenar iconos creados por Smashicons - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/woman" title="woman icons">Woman icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/profile" title="profile icons">Profile icons created by Pixel perfect - Flaticon</a>
+<a href="https://www.flaticon.es/iconos-gratis/ayuda" title="ayuda iconos">Ayuda iconos creados por Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/cafeteria" title="cafeteria icons">Cafeteria icons created by surang - Flaticon</a>

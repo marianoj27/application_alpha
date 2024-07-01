@@ -1,6 +1,9 @@
 import 'package:application_alpha/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:application_alpha/consts.dart';
 
 class speechScreen extends StatefulWidget {
   const speechScreen({super.key});
@@ -10,115 +13,200 @@ class speechScreen extends StatefulWidget {
 }
 
 class _speechScreenState extends State<speechScreen> {
-  FlutterTts _flutterTts = FlutterTts();
-
-  List<Map> _voices = [];
-  Map? _currentVoice;
-
-  int? _currentWordStart, _currentWordEnd;
+  final TextEditingController _textController = TextEditingController();
+  List<String> _suggestions = [];
+  List<String> _selectedWords = [];
+  String _displayedText = '';
+  FlutterTts flutterTts = FlutterTts();
 
   @override
   void initState() {
     super.initState();
-    initTTS();
+    configureTts();
   }
 
-  void initTTS() {
-    _flutterTts.setProgressHandler((text, start, end, word) {
-      setState(() {
-        _currentWordStart = start;
-        _currentWordEnd = end;
-      });
+  Future<void> configureTts() async {
+    await flutterTts.setLanguage('es-ES');
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+  }
+
+  void speak() async {
+    try {
+      await flutterTts.speak(_displayedText);
+    } catch (e) {
+      print('Error speaking text: $e');
+    }
+  }
+
+  void _onTextChanged(String text) {
+    setState(() {
+      _suggestions = wordSuggestions.keys.where((word) => word.startsWith(text)).toList();
     });
-    _flutterTts.getVoices.then((data) {
-      try {
-        List<Map> voices = List<Map>.from(data);
-        setState(() {
-          _voices =
-              voices.where((voice) => voice["name"].contains("en")).toList();
-          _currentVoice = _voices.first;
-          setVoice(_currentVoice!);
-        });
-      } catch (e) {
-        print(e);
+  }
+
+  void _onSuggestionTapped(String word) {
+    if (_selectedWords.length < 5) {
+      setState(() {
+        _selectedWords.add(word);
+        _textController.clear();
+        _updateDisplayedText();
+        _updateSuggestions();
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No puedes agregar más de 5 palabras'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _updateDisplayedText() {
+    setState(() {
+      _displayedText = _selectedWords.join(' ');
+    });
+  }
+
+  void _updateSuggestions() {
+    setState(() {
+      if (_selectedWords.isNotEmpty) {
+        final lastWord = _selectedWords.last;
+        _suggestions = wordSuggestions[lastWord] ?? [];
+
+        if (_selectedWords.length > 1) {
+          final secondLastWord = _selectedWords[_selectedWords.length - 2];
+          final continuationSuggestions = wordSuggestions[secondLastWord + ' ' + lastWord] ?? [];
+          _suggestions.addAll(continuationSuggestions);
+        }
+      } else {
+        _suggestions = [];
       }
     });
   }
 
-  void setVoice(Map voice) {
-    _flutterTts.setVoice({"name": voice["name"], "locale": voice["locale"]});
+  void _clearText() {
+    setState(() {
+      _selectedWords.clear();
+      _textController.clear();
+      _displayedText = '';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildUI(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _flutterTts.speak(TTS_INPUT);
-        },
-        child: const Icon(
-          Icons.speaker_phone,
+      appBar: AppBar(
+        title: const Text(
+          '¡Hacer Frases!',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         ),
+        backgroundColor: Colors.greenAccent,
       ),
-    );
-  }
-
-  Widget _buildUI() {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _speakerSelector(),
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              style: const TextStyle(
-                fontWeight: FontWeight.w300,
-                fontSize: 20,
-                color: Colors.black,
-              ),
-              children: <TextSpan>[
-                TextSpan(
-                  text: TTS_INPUT.substring(0, _currentWordStart),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _textController,
+              onChanged: _onTextChanged,
+              style: const TextStyle(fontSize: 18),
+              decoration: InputDecoration(
+                hintText: 'Escribe una palabra',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0),
                 ),
-                if (_currentWordStart != null)
-                  TextSpan(
-                    text: TTS_INPUT.substring(
-                        _currentWordStart!, _currentWordEnd),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      backgroundColor: Colors.purpleAccent,
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: _suggestions
+                          .map((word) => ElevatedButton(
+                        onPressed: () => _onSuggestionTapped(word),
+                        child: Text(
+                          word,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ))
+                          .toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Text(
+                          _displayedText,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
                   ),
-                if (_currentWordEnd != null)
-                  TextSpan(
-                    text: TTS_INPUT.substring(_currentWordEnd!),
-                  ),
-              ],
+                  const SizedBox(width: 16.0),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _speakerSelector() {
-    return DropdownButton(
-      value: _currentVoice,
-      items: _voices
-          .map(
-            (_voice) => DropdownMenuItem(
-          value: _voice,
-          child: Text(
-            _voice["name"],
-          ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                border: Border.all(
+                  width: 2.0,
+                  color: Colors.transparent,
+                ),
+                borderRadius: BorderRadius.circular(10.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(3, 3),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                onPressed: _clearText,
+                icon: const Icon(
+                  Icons.delete,
+                  size: 25.0,
+                ),
+                splashColor: Colors.blue,
+                highlightColor: Colors.black12,
+                iconSize: 60.0,
+              ),
+            ),
+          ],
         ),
-      )
-          .toList(),
-      onChanged: (value) {},
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: speak,
+        child: const Icon(Icons.volume_up),
+        backgroundColor: Colors.greenAccent,
+      ),
     );
   }
 }

@@ -1,5 +1,9 @@
+import 'package:application_alpha/classes/imagesScreen.dart';
 import 'package:application_alpha/menuScreen.dart';
 import 'package:flutter/material.dart';
+
+import 'classes/profileScreen.dart';
+import 'classes/speechScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,17 +16,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aphasia App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.tealAccent),
-        useMaterial3: true,
-      ),
-      home: _login(),
+        title: 'AphaTalk',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+          useMaterial3: true,
+        ),
+        initialRoute: '/',
+        routes: {
+        '/': (context) => menuScreen(),
+        '/image': (context) => imagenScreen(),
+        '/speech': (context) => speechScreen(),
+        '/profile': (context) => profileScreen(),
+      },
     );
   }
 }
-class _login extends StatefulWidget {
+
+/*class _login extends StatefulWidget {
 
   @override
   State<_login> createState() => _loginState();
@@ -31,6 +42,8 @@ class _login extends StatefulWidget {
 class _loginState extends State<_login> {
   TextEditingController userName = TextEditingController();
   //TextEditingController password = TextEditingController();
+  UserModel _userModel = UserModel();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,8 +71,12 @@ class _loginState extends State<_login> {
               SizedBox(height: 50,),
               TextField(
                 controller: userName,
+                onChanged: (value) {
+                  _userModel.userName = value;
+                  //print(_userModel.userName);
+                },
                 decoration: InputDecoration(
-                  hintText: "Usuario"
+                    hintText: "Usuario"
                 ),
               ),
               SizedBox(height: 20,), //Hack caja
@@ -80,6 +97,7 @@ class _loginState extends State<_login> {
                 child: TextButton(
                   child: Text("Acceder", style: TextStyle(color:Colors.white, fontSize: 20),),
                   onPressed: (){
+                    _userModel.setUserName(_userModel.userName);
                     Navigator.push(context, MaterialPageRoute(builder: (_)=>menuScreen()));
                   },
                 ),
@@ -90,6 +108,6 @@ class _loginState extends State<_login> {
       )
     );
   }
-}
+}*/
 
 

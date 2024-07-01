@@ -1,30 +1,80 @@
+import 'package:application_alpha/classes/cardScreen.dart';
+import 'package:application_alpha/classes/newImageScreen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
+
+import '../sharedPreferencesHelper.dart';
+import '../widgets/button_image.dart';
+import '../widgets/icon_window.dart';
 
 class imagenScreen extends StatefulWidget {
-  List<String> imagesList = ['market_icon.png', 'subway_icon.png'];
 
   @override
   State<imagenScreen> createState() => _imagenScreenState();
 }
 
 class _imagenScreenState extends State<imagenScreen> {
-  List<Widget> imageList = [
-    _buttonImage("Mercado", "market_icon.png"),
-    _buttonImage("Metro", "subway_icon.png"),
-    _buttonImage("Metro", "subway_icon.png"),
-    _buttonImage("Mercado", "market_icon.png"),
-  ];
+  List<Widget> imageList = [];
+  List<Widget> addedImageList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    initializeDefaultButtons();
+    loadSavedSVGAndNames();
+  }
+
+  void initializeDefaultButtons() {
+    imageList.addAll([
+      const ButtonImage(name: "Mercado", img: "market_icon.png",),
+      const ButtonImage(name: "Metro", img: "subway_icon.png"),
+      const ButtonImage(name: "Bar/Cafetería", img: "cafeteria_icon.png"),
+      const ButtonImage(name: "Ayuda", img: "help_icon.png"),
+    ]);
+  }
+
+  Future<void> loadSavedSVGAndNames() async {
+    final svgAndNameList = await SharedPreferencesHelper.loadSVG('svg_and_name');
+    if (svgAndNameList != null) {
+      setState(() {
+        addedImageList.addAll(svgAndNameList.map((item) {
+          final name = item[0];
+          final svg = item[1];
+          return ButtonImage(name: name, img: svg);
+        }).toList());
+      });
+    }
+  }
+
+  Future<void> deleteSVGAndName(String img) async {
+    await SharedPreferencesHelper.removeSVGByImg('svg_and_name', img);
+    setState(() {
+      addedImageList.removeWhere((widget) => (widget as ButtonImage).img == img);
+    });
+  }
+
+  Future<void> deletePhrasesFromImage(String name) async {
+    //phrasesList = await SharedPreferencesHelper.getList(name);
+    await SharedPreferencesHelper.clearList(name);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "IMÁGENES",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamed(context, '/');
+          },
         ),
-        backgroundColor: Colors.tealAccent,
+        title: const Text(
+          "¡Imágenes!",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        ),
+        backgroundColor: Colors.greenAccent,
+        elevation: 4,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -48,9 +98,154 @@ class _imagenScreenState extends State<imagenScreen> {
                 ),
               ],
             ),
-            Wrap(
-              alignment: WrapAlignment.spaceEvenly,
-              children: imageList,
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceEvenly,
+                        children: [
+                          ...imageList,
+                          ...addedImageList,
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton.icon(
+                    onPressed: () async {
+                      List<String> selectedImages = [];
+                      bool isCanceled = false;
+
+                      await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return StatefulBuilder(
+                            builder: (BuildContext context, StateSetter setState) {
+                              return AlertDialog(
+                                title: const Text('Eliminar objetos de la lista:'),
+                                content: SingleChildScrollView(
+                                  child: ListBody(
+                                    children: [
+                                      ...addedImageList.map((widget) {
+                                        final ButtonImage buttonImage = widget as ButtonImage;
+                                        bool isSelected = selectedImages.contains(buttonImage.img);
+
+                                        return ListTile(
+                                          leading: buttonImage.img.startsWith('<svg')
+                                              ? SvgPicture.string(
+                                            buttonImage.img,
+                                            width: 40,
+                                            height: 40,
+                                          )
+                                              : Image.asset(
+                                            "assets/${buttonImage.img}",
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                          title: Text(
+                                            buttonImage.name,
+                                            style: TextStyle(
+                                              color: isSelected ? Colors.red : Colors.black,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          trailing: IconButton(
+                                            icon: Icon(
+                                              Icons.delete,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                if (isSelected) {
+                                                  selectedImages.remove(buttonImage.img);
+                                                } else {
+                                                  selectedImages.add(buttonImage.img);
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ],
+                                  ),
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      isCanceled = true;
+                                      Navigator.of(context).pop([]);
+                                    },
+                                    child: const Text('Cancelar'),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: isCanceled ? Colors.black : null,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.of(context).pop(selectedImages);
+                                      for (String imgToDelete in selectedImages) {
+                                        if (imgToDelete.isNotEmpty && !isCanceled) {
+                                          await deleteSVGAndName(imgToDelete);
+                                          await deletePhrasesFromImage(imgToDelete);
+                                        }
+                                      }
+                                    },
+                                    child: const Text(
+                                      'Borrar',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.delete, color: Colors.white), // Icono para Borrar Módulo
+                    label: const Text(
+                      'Borrar',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.pink, // Color de fondo para Borrar Módulo
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => newImageScreen()),
+                      );
+                    },
+                    icon: Icon(Icons.add, color: Colors.white, size: 30,), // Icono para Añadir Nuevo
+                    label: const Text(
+                      'Añadir Nuevo',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.cyan, // Color de fondo para Añadir Nuevo
+                      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0,), // Ajustar el espaciado aquí
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -59,10 +254,12 @@ class _imagenScreenState extends State<imagenScreen> {
   }
 }
 
-Widget _buttonImage(String name, String img) {
+/*
+Widget _buttonImage(BuildContext context,String name, String img) {
   return InkWell(
     onTap: () {
       // Acción a realizar al hacer clic en el botón de imagen
+      Navigator.push(context, MaterialPageRoute(builder: (_)=>cardScreen(selectedImage: img, name: name,)));
       print('Has hecho clic en la imagen: $img');
     },
     child: Container(
@@ -90,7 +287,7 @@ Widget _buttonImage(String name, String img) {
   );
 }
 
-/*
+
 class _imagenScreenState extends State<imagenScreen> {
   @override
   Widget build(BuildContext context) {
